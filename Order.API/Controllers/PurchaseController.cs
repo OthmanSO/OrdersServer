@@ -32,19 +32,19 @@ namespace Order.API.Controllers
 
             // call book server api
             var book = await _bookRepo.GetBook(bookId.Value);
-            if( book == null)
+            if (book == null)
                 return NotFound($"Book with id = {bookId} not found");
 
             var pur = new PurchaseForCreationDto();
             pur.price = book.price;
             pur.bookId = bookId.Value;
 
-            if(book.quantity == 0)
+            if (book.quantity == 0)
                 return Conflict($"Sorry,Book {book.title} is out of stock!");
-            
+
             //update quantity of books
             book.quantity -= 1;
-            await _bookRepo.PutBook(book);
+            await _bookRepo.PutBook(book, bookId.Value);
 
             //save purchase to db
             var purchaseEntity = _mapper.Map<Purchase>(pur);

@@ -11,6 +11,6 @@ namespace Order.API.Repositories
         [Get("books/{id}")]
         Task<BookDto> GetBook(int id);
         [Put("books/{id}")]
-        Task<BookDto> PutBook([Body] BookDto book);
+        Task<BookDto> PutBook([Body] BookDto book ,int id);
     }
 }
