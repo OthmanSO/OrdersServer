@@ -25,32 +25,42 @@ namespace Order.API.Controllers
         }
 
         [HttpPost("{bookId}")]
-        public async Task<ActionResult> PlaceOrder(int? bookId)
+        public async Task<IActionResult> PlaceOrder(int bookId)
         {
-            if (bookId == null)
-                return NotFound("Please Provide BookId that you wonna Purchase");
-
             // call book server api
-            var book = await _bookRepo.GetBook(bookId.Value);
-            if (book == null)
-                return NotFound($"Book with id = {bookId} not found");
+            try
+            {
+                var book = await _bookRepo.GetBook(bookId);
 
-            var pur = new PurchaseForCreationDto();
-            pur.price = book.price;
-            pur.bookId = bookId.Value;
+                var pur = new PurchaseForCreationDto();
+                pur.price = book.price;
+                pur.bookId = bookId;
 
-            if (book.quantity == 0)
-                return Conflict($"Sorry,Book {book.title} is out of stock!");
+                if (book.quantity == 0)
+                {
+                    var err = new ErrorCode();
+                    err.MessageError = $"Sorry,Book {book.title} is out of stock!";
+                    return Conflict(err);
+                }
+                //update quantity of books
+                book.quantity -= 1;
+                await _bookRepo.PutBook(book, bookId);
 
-            //update quantity of books
-            book.quantity -= 1;
-            await _bookRepo.PutBook(book, bookId.Value);
+                //save purchase to db
+                var purchaseEntity = _mapper.Map<Purchase>(pur);
+                _purchaseRepo.AddPurchase(purchaseEntity);
 
-            //save purchase to db
-            var purchaseEntity = _mapper.Map<Purchase>(pur);
-            _purchaseRepo.AddPurchase(purchaseEntity);
+                var okCode = new OkCode();
+                okCode.okMessage = $"Book {book.title} purchased";
+                return Ok(okCode);
+            }
+            catch (Exception e)
+            {
+                var err = new ErrorCode();
+                err.MessageError = $" Book with id = {bookId} not found";
+                return Conflict(err);
+            }
 
-            return Ok($"Book {book.title} purchased");
         }
     }
 }

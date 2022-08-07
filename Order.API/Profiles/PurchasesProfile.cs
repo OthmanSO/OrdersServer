@@ -14,6 +14,5 @@ namespace Orders.API.Profiles
                 opts => opts.Ignore()
             );
         }
-        
     }
 }

@@ -10,7 +10,7 @@ namespace Order.API.Entities
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int PurchaseId { get; set; }
         [Required]
-        public Guid bookId { get; set; }
+        public int bookId { get; set; }
         [Required]
         public int price { get; set; }
     } 
