@@ -15,6 +15,11 @@ builder.Services.AddControllers();
 //see this 
 builder.Services.AddRefitClient<IBookSDataAccessRepository>().ConfigureHttpClient(c =>
 c.BaseAddress = new Uri(builder.Configuration.GetConnectionString("BooksAPI")));
+
+builder.Services.AddRefitClient<IPurchaseSyncRepository>().ConfigureHttpClient(c =>
+c.BaseAddress = new Uri(builder.Configuration.GetConnectionString("syncAPI")));
+
+
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddDbContext<OrderingDbContext>( options => 
 options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));

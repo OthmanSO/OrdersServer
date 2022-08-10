@@ -17,11 +17,14 @@ namespace Order.API.Controllers
         private readonly IMapper _mapper;
         private readonly PurchaseRepository _purchaseRepo;
         private readonly IBookSDataAccessRepository _bookRepo;
-        public PurchaseController(PurchaseRepository pr, IMapper map, IBookSDataAccessRepository bk)
+        private readonly IPurchaseSyncRepository _syncRepo;
+        public PurchaseController(PurchaseRepository pr, IMapper map,
+                 IBookSDataAccessRepository bk, IPurchaseSyncRepository sr)
         {
             _mapper = map ?? throw new ArgumentNullException(nameof(IMapper));
             _purchaseRepo = pr ?? throw new ArgumentNullException(nameof(PurchaseRepository));
             _bookRepo = bk ?? throw new ArgumentNullException(nameof(IBookSDataAccessRepository));
+            _syncRepo = sr ?? throw new ArgumentNullException(nameof(IPurchaseSyncRepository));
         }
 
         [HttpPost("{bookId}")]
@@ -49,7 +52,9 @@ namespace Order.API.Controllers
                 //save purchase to db
                 var purchaseEntity = _mapper.Map<Purchase>(pur);
                 _purchaseRepo.AddPurchase(purchaseEntity);
-
+                // sync
+                await _syncRepo.SyncOut(purchaseEntity);
+                
                 var okCode = new OkCode();
                 okCode.okMessage = $"Book {book.title} purchased";
                 return Ok(okCode);
